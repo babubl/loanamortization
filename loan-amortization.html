@@ -4,974 +4,397 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Loan Amortization Engine</title>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,600;9..144,700&family=Manrope:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Manrope:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
 <style>
-:root {
-  --bg-base: #0c0f14;
-  --bg-elevated: #12161e;
-  --bg-card: #171c27;
-  --bg-card-hover: #1c2233;
-  --bg-input: #0e1219;
-  --bg-input-focus: #111620;
-  --bg-tooltip: #1e2536;
-  --border-subtle: rgba(255,255,255,0.06);
-  --border-default: rgba(255,255,255,0.09);
-  --border-focus: #4f8ff7;
-  --border-error: #e5534b;
-  --accent-blue: #4f8ff7;
-  --accent-blue-soft: rgba(79,143,247,0.12);
-  --accent-green: #3fb950;
-  --accent-green-soft: rgba(63,185,80,0.12);
-  --accent-amber: #d29922;
-  --accent-amber-soft: rgba(210,153,34,0.12);
-  --accent-red: #e5534b;
-  --accent-red-soft: rgba(229,83,75,0.1);
-  --text-primary: #e6edf3;
-  --text-secondary: #8b949e;
-  --text-muted: #545d68;
-  --font-display: 'Fraunces', Georgia, serif;
-  --font-body: 'Manrope', system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
-  --radius-sm: 6px;
-  --radius: 10px;
-  --radius-lg: 14px;
-  --transition: 0.2s cubic-bezier(0.25,0.46,0.45,0.94);
-}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{font-size:15px;scroll-behavior:smooth}
-body{font-family:var(--font-body);background:var(--bg-base);color:var(--text-primary);line-height:1.65;min-height:100vh;-webkit-font-smoothing:antialiased}
-
-.hero{position:relative;padding:3.5rem 2rem 2.5rem;text-align:center;border-bottom:1px solid var(--border-subtle)}
-.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 50% at 50% 0%,rgba(79,143,247,0.08) 0%,transparent 70%),radial-gradient(ellipse 40% 60% at 80% 100%,rgba(163,113,247,0.05) 0%,transparent 60%);pointer-events:none}
-.hero h1{font-family:var(--font-display);font-size:2.4rem;font-weight:600;letter-spacing:-0.02em;position:relative}
-.hero .tagline{font-size:1rem;color:var(--text-secondary);margin-top:0.6rem;position:relative}
-.hero .trust-badges{display:flex;gap:1.5rem;justify-content:center;margin-top:1.2rem;position:relative;flex-wrap:wrap}
-.trust-badge{font-family:var(--font-mono);font-size:0.65rem;font-weight:500;color:var(--text-muted);display:flex;align-items:center;gap:0.4rem}
-.trust-badge .dot{width:6px;height:6px;border-radius:50%;background:var(--accent-green);box-shadow:0 0 6px rgba(63,185,80,0.4)}
-
-.container{max-width:1100px;margin:0 auto;padding:2rem 1.5rem 4rem}
-
-.intro-card{background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--radius-lg);padding:1.5rem 1.75rem;margin-bottom:2rem;display:flex;gap:1rem;align-items:flex-start;animation:fadeUp .5s ease}
-.intro-card .intro-icon{font-size:1.5rem;flex-shrink:0;margin-top:.1rem}
-.intro-card h2{font-family:var(--font-display);font-size:1.1rem;font-weight:600;margin-bottom:.4rem}
-.intro-card p{font-size:.88rem;color:var(--text-secondary);line-height:1.7}
-.intro-features{display:flex;gap:1.5rem;margin-top:.75rem;flex-wrap:wrap}
-.intro-feat{font-size:.78rem;color:var(--text-muted);display:flex;align-items:center;gap:.35rem}
-.intro-feat .check{color:var(--accent-green);font-weight:700}
-
-/* Accordion */
-.form-step{background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--radius-lg);margin-bottom:1rem;overflow:hidden;transition:border-color var(--transition)}
-.form-step:hover{border-color:var(--border-default)}
-.form-step.has-error{border-color:var(--border-error)}
-.step-header{display:flex;align-items:center;gap:.75rem;padding:1.1rem 1.5rem;cursor:pointer;user-select:none;transition:background var(--transition)}
-.step-header:hover{background:var(--bg-card-hover)}
-.step-number{width:28px;height:28px;border-radius:50%;background:var(--accent-blue-soft);color:var(--accent-blue);font-family:var(--font-mono);font-size:.72rem;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.step-title{font-weight:600;font-size:.95rem;flex:1}
-.step-subtitle{font-size:.75rem;color:var(--text-muted);font-weight:400;margin-left:.5rem}
-.step-chevron{color:var(--text-muted);transition:transform var(--transition);font-size:.8rem}
-.form-step.open .step-chevron{transform:rotate(180deg)}
-.step-body{max-height:0;overflow:hidden;transition:max-height .35s ease,padding .35s ease;padding:0 1.5rem}
-.form-step.open .step-body{max-height:1200px;padding:.5rem 1.5rem 1.5rem}
-
-/* Fields */
-.field-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.1rem}
-.field-grid.three{grid-template-columns:1fr 1fr 1fr}
-.field{display:flex;flex-direction:column;gap:.3rem}
-.field.full{grid-column:1/-1}
-.label-row{display:flex;align-items:center;gap:.4rem}
-label{font-size:.73rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-secondary);font-family:var(--font-mono)}
-.tooltip-trigger{width:16px;height:16px;border-radius:50%;background:var(--bg-tooltip);color:var(--text-muted);font-size:.6rem;font-weight:700;display:inline-flex;align-items:center;justify-content:center;cursor:help;position:relative;border:1px solid var(--border-subtle);font-family:var(--font-mono)}
-.tooltip-trigger:hover{color:var(--accent-blue);border-color:var(--accent-blue)}
-.tooltip-text{position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:var(--bg-tooltip);border:1px solid var(--border-default);border-radius:var(--radius-sm);padding:.6rem .8rem;font-family:var(--font-body);font-size:.78rem;font-weight:400;color:var(--text-secondary);text-transform:none;letter-spacing:0;line-height:1.5;width:240px;white-space:normal;pointer-events:none;opacity:0;transition:opacity .15s;z-index:100;box-shadow:0 4px 16px rgba(0,0,0,.35)}
-.tooltip-trigger:hover .tooltip-text{opacity:1}
-
-input,select{font-family:var(--font-body);font-size:.9rem;padding:.65rem .85rem;background:var(--bg-input);border:1px solid var(--border-subtle);border-radius:var(--radius-sm);color:var(--text-primary);transition:all var(--transition);width:100%}
-input:focus,select:focus{outline:none;border-color:var(--border-focus);background:var(--bg-input-focus);box-shadow:0 0 0 3px rgba(79,143,247,.12)}
-input.error{border-color:var(--border-error);box-shadow:0 0 0 3px var(--accent-red-soft)}
-select{cursor:pointer}
-select option{background:var(--bg-card)}
-.input-hint{font-size:.7rem;color:var(--text-muted);font-style:italic}
-.field-error{font-size:.7rem;color:var(--accent-red);font-weight:500;display:none;align-items:center;gap:.3rem}
-.field-error.visible{display:flex}
-
-.prepayment-list{display:flex;flex-direction:column;gap:.5rem;margin-top:.75rem}
-.prepayment-row{display:flex;gap:.5rem;align-items:center;animation:fadeUp .2s ease}
-.prepayment-row input{flex:1}
-.btn-icon{width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:var(--radius-sm);border:1px solid var(--border-subtle);background:var(--bg-input);color:var(--text-secondary);cursor:pointer;font-size:1rem;transition:all var(--transition);flex-shrink:0}
-.btn-icon:hover{border-color:var(--accent-red);color:var(--accent-red)}
-.add-prepay-btn{font-family:var(--font-mono);font-size:.72rem;color:var(--accent-blue);background:var(--accent-blue-soft);border:1px dashed rgba(79,143,247,.3);border-radius:var(--radius-sm);padding:.5rem 1rem;cursor:pointer;transition:all var(--transition);display:inline-flex;align-items:center;gap:.4rem;margin-top:.5rem}
-.add-prepay-btn:hover{background:rgba(79,143,247,.18);border-color:var(--accent-blue)}
-
-/* Actions */
-.actions{display:flex;gap:.75rem;margin:1.75rem 0 2.5rem;flex-wrap:wrap}
-.btn{font-family:var(--font-body);font-size:.88rem;font-weight:600;padding:.8rem 2rem;border-radius:var(--radius);border:none;cursor:pointer;transition:all var(--transition);display:inline-flex;align-items:center;gap:.5rem}
-.btn:disabled{opacity:.4;cursor:not-allowed}
-.btn-primary{background:var(--accent-blue);color:#fff;box-shadow:0 2px 16px rgba(79,143,247,.25)}
-.btn-primary:hover:not(:disabled){background:#3a7be0;transform:translateY(-1px);box-shadow:0 4px 20px rgba(79,143,247,.35)}
-.btn-secondary{background:transparent;color:var(--text-secondary);border:1px solid var(--border-default)}
-.btn-secondary:hover{border-color:var(--text-secondary);color:var(--text-primary)}
-.btn .spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;display:none}
-.btn.loading .spinner{display:block}
-.btn.loading .btn-label{opacity:.6}
+body{font-family:'Manrope',system-ui,sans-serif;background:#0c0f14;color:#e6edf3;line-height:1.65;min-height:100vh;-webkit-font-smoothing:antialiased}
 @keyframes spin{to{transform:rotate(360deg)}}
-
-/* Output */
-#output-section{display:none}
-#output-section.visible{display:block}
-.output-entrance>*{opacity:0;transform:translateY(20px);animation:fadeUp .5s ease forwards}
-.output-entrance>*:nth-child(1){animation-delay:.05s}
-.output-entrance>*:nth-child(2){animation-delay:.15s}
-.output-entrance>*:nth-child(3){animation-delay:.25s}
-.output-entrance>*:nth-child(4){animation-delay:.35s}
-.output-entrance>*:nth-child(5){animation-delay:.4s}
-.output-entrance>*:nth-child(6){animation-delay:.45s}
-.output-entrance>*:nth-child(7){animation-delay:.5s}
-.output-entrance>*:nth-child(8){animation-delay:.55s}
-.output-entrance>*:nth-child(9){animation-delay:.6s}
 @keyframes fadeUp{to{opacity:1;transform:translateY(0)}}
-.section-divider{border:none;border-top:1px solid var(--border-subtle);margin:2.5rem 0}
-.output-header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.5rem;flex-wrap:wrap;gap:.5rem}
-.output-header h2{font-family:var(--font-display);font-size:1.6rem;font-weight:600}
-.export-btn{font-family:var(--font-mono);font-size:.68rem;font-weight:500;color:var(--text-secondary);background:var(--bg-card);border:1px solid var(--border-subtle);padding:.45rem .9rem;border-radius:var(--radius-sm);cursor:pointer;transition:all var(--transition);display:inline-flex;align-items:center;gap:.35rem}
-.export-btn:hover{border-color:var(--accent-blue);color:var(--accent-blue)}
-
-/* Insights */
-.insights-card{background:linear-gradient(135deg,var(--bg-card) 0%,#161c2a 100%);border:1px solid var(--border-subtle);border-radius:var(--radius-lg);padding:1.75rem;margin-bottom:1.5rem}
-.insights-card h3{font-family:var(--font-display);font-size:1.05rem;font-weight:600;margin-bottom:.8rem;display:flex;align-items:center;gap:.5rem}
-.insights-text{font-size:.92rem;color:var(--text-secondary);line-height:1.8}
-.insights-text strong{color:var(--text-primary);font-weight:600}
-.insights-text .hl-green{color:var(--accent-green);font-weight:600}
-.insights-text .hl-amber{color:var(--accent-amber);font-weight:600}
-
-/* Summary Cards */
-.summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.75rem;margin-bottom:1.5rem}
-.summary-card{background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--radius);padding:1.15rem 1rem;text-align:center;transition:all var(--transition)}
-.summary-card:hover{border-color:var(--border-default);transform:translateY(-2px)}
-.metric-label{font-family:var(--font-mono);font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-muted);margin-bottom:.4rem}
-.metric-value{font-family:var(--font-display);font-size:1.45rem;font-weight:600}
-.summary-card.green{border-left:3px solid var(--accent-green)}
-.summary-card.green .metric-value{color:var(--accent-green)}
-.summary-card.amber{border-left:3px solid var(--accent-amber)}
-.summary-card.amber .metric-value{color:var(--accent-amber)}
-.summary-card.blue{border-left:3px solid var(--accent-blue)}
-.summary-card.blue .metric-value{color:var(--accent-blue)}
-
-/* Breakdown bar */
-.breakdown-section{margin-bottom:2rem;max-width:600px}
-.breakdown-bar{display:flex;height:14px;border-radius:7px;overflow:hidden;margin-bottom:.6rem;background:var(--bg-input)}
-.bar-seg-principal{background:var(--accent-blue);border-radius:7px 0 0 7px;transition:width .6s ease}
-.bar-seg-interest{background:var(--accent-amber);transition:width .6s ease}
-.breakdown-legend{display:flex;gap:1.5rem;flex-wrap:wrap}
-.legend-item{font-family:var(--font-mono);font-size:.68rem;color:var(--text-muted);display:flex;align-items:center;gap:.4rem}
-.legend-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
-
-/* Assumptions */
-.assumptions-card{background:var(--bg-elevated);border:1px solid var(--border-subtle);border-radius:var(--radius);padding:1.1rem 1.3rem;margin-bottom:1.5rem;font-size:.78rem;color:var(--text-muted);line-height:1.7}
-.assumptions-card summary{cursor:pointer;font-family:var(--font-mono);font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text-secondary);list-style:none;display:flex;align-items:center;gap:.4rem}
-.assumptions-card summary::-webkit-details-marker{display:none}
-.assumptions-card[open] summary{margin-bottom:.75rem}
-.assumptions-list{padding-left:1rem}
-.assumptions-list li{margin-bottom:.3rem}
-.disclaimer{font-size:.72rem;color:var(--text-muted);padding:.8rem 1rem;background:var(--accent-amber-soft);border:1px solid rgba(210,153,34,.15);border-radius:var(--radius-sm);margin-bottom:1.5rem;line-height:1.6}
-.disclaimer strong{color:var(--accent-amber)}
-
-/* Tabs */
-.tab-bar{display:flex;gap:0;border-bottom:1px solid var(--border-subtle);margin-bottom:1rem}
-.tab-btn{font-family:var(--font-mono);font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.07em;padding:.7rem 1.3rem;background:transparent;color:var(--text-muted);border:none;border-bottom:2px solid transparent;cursor:pointer;transition:all var(--transition)}
-.tab-btn:hover{color:var(--text-secondary)}
-.tab-btn.active{color:var(--accent-blue);border-bottom-color:var(--accent-blue)}
-
-/* Table */
-.table-wrap{overflow-x:auto;border:1px solid var(--border-subtle);border-radius:var(--radius);background:var(--bg-card);max-height:550px;overflow-y:auto}
-table{width:100%;border-collapse:collapse}
-thead th{font-family:var(--font-mono);font-size:.62rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);padding:.8rem .85rem;text-align:right;border-bottom:1px solid var(--border-default);background:var(--bg-elevated);position:sticky;top:0;white-space:nowrap;z-index:2}
-thead th:first-child{text-align:center;width:50px}
-thead th:nth-child(2){text-align:left}
-tbody td{padding:.55rem .85rem;text-align:right;border-bottom:1px solid rgba(255,255,255,.03);font-family:var(--font-mono);font-size:.75rem;color:var(--text-secondary);white-space:nowrap}
-tbody td:first-child{text-align:center;color:var(--text-muted);font-size:.7rem}
-tbody td:nth-child(2){text-align:left;font-size:.72rem}
-tbody tr:hover td{background:rgba(79,143,247,.03);color:var(--text-primary)}
-tbody tr.prepay-row td{background:var(--accent-green-soft)}
-tbody tr.prepay-row td:nth-child(7){color:var(--accent-green);font-weight:600}
-tbody tr.moratorium-row td{background:var(--accent-amber-soft)}
-tbody tr.moratorium-row td:nth-child(2)::after{content:' (M)';font-size:.6rem;color:var(--accent-amber);font-weight:600}
-
 ::-webkit-scrollbar{width:5px;height:5px}
 ::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:var(--border-default);border-radius:3px}
-:focus-visible{outline:2px solid var(--accent-blue);outline-offset:2px}
-
-@media(max-width:600px){
-  .field-grid,.field-grid.three{grid-template-columns:1fr}
-  .hero h1{font-size:1.6rem}
-  .hero .trust-badges{flex-direction:column;gap:.5rem;align-items:center}
-  .intro-card{flex-direction:column}
-  .summary-grid{grid-template-columns:1fr 1fr}
-  .container{padding:1rem}
-  .actions{justify-content:stretch}
-  .actions .btn{flex:1;justify-content:center}
-}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.09);border-radius:3px}
 </style>
 </head>
 <body>
-<header class="hero" role="banner">
-  <h1>Loan Amortization Engine</h1>
-  <p class="tagline">See exactly where every rupee of your loan goes — EMI breakdown, prepayment savings, and the real cost of borrowing.</p>
-  <div class="trust-badges" aria-label="Trust indicators">
-    <span class="trust-badge"><span class="dot" aria-hidden="true"></span> Reducing-Balance Method</span>
-    <span class="trust-badge"><span class="dot" aria-hidden="true"></span> Bank-Grade Accuracy</span>
-    <span class="trust-badge"><span class="dot" aria-hidden="true"></span> 100% Client-Side</span>
-  </div>
-</header>
-<div class="container">
+<div id="root"></div>
+<script type="text/babel">
+const {useState,useRef,useEffect,useCallback} = React;
 
-<div class="intro-card" role="region" aria-label="About this tool">
-  <div class="intro-icon" aria-hidden="true">📊</div>
-  <div>
-    <h2>What does this tool do?</h2>
-    <p>Enter your loan details below and get a detailed month-by-month amortization schedule showing how much of each EMI goes toward interest vs. principal. See how prepayments can save you lakhs in interest and years of repayment.</p>
-    <div class="intro-features">
-      <span class="intro-feat"><span class="check" aria-hidden="true">✓</span> Fixed &amp; floating rates</span>
-      <span class="intro-feat"><span class="check" aria-hidden="true">✓</span> Moratorium support</span>
-      <span class="intro-feat"><span class="check" aria-hidden="true">✓</span> Prepayment scenarios</span>
-      <span class="intro-feat"><span class="check" aria-hidden="true">✓</span> CSV export</span>
-    </div>
-  </div>
-</div>
+/* ═══ FINANCIAL ENGINE ═══ */
+function addMonths(date,months){const d=new Date(date);const day=d.getDate();d.setMonth(d.getMonth()+months);if(d.getDate()!==day)d.setDate(0);return d}
+function daysBetween(a,b){return Math.round((b-a)/864e5)}
+function fmtDate(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function computeEMI(P,r,n){if(r===0)return P/n;if(n<=0)return 0;const f=Math.pow(1+r,n);return P*r*f/(f-1)}
+function computePeriodInterest(pr,ar,comp,dc,ps,pe){const rate=ar/100;if(comp==='monthly')return dc==='30_360'?pr*(rate/12):pr*rate*daysBetween(ps,pe)/365;const days=daysBetween(ps,pe);return dc==='30_360'?pr*(rate/360)*30:pr*(rate/365)*days}
+function periodicRate(ar,comp,dc){const r=ar/100;if(comp==='monthly')return r/12;return dc==='30_360'?r/360*30:r/12}
+function applyRounding(v,m){return m==='nearest_rupee'?Math.round(v):Math.round(v*100)/100}
+function fmtCurrency(v,sym,m){const n=m==='nearest_rupee'?Math.round(v):Math.round(v*100)/100;return sym+n.toLocaleString('en-IN',{minimumFractionDigits:m==='exact'?2:0,maximumFractionDigits:m==='exact'?2:0})}
+function fmtLakhs(v,s){if(Math.abs(v)>=1e7)return s+(v/1e7).toFixed(2)+' Cr';if(Math.abs(v)>=1e5)return s+(v/1e5).toFixed(2)+' L';return s+Math.round(v).toLocaleString('en-IN')}
+function computeBaselineInterest(pr,ar,tm,pm,co,dc,rn){const tp=Math.ceil(tm/pm);let r=periodicRate(ar,co,dc);if(pm===3&&co==='monthly')r=Math.pow(1+periodicRate(ar,'monthly',dc),3)-1;const emi=applyRounding(computeEMI(pr,r,tp),rn);let bal=pr,tot=0;for(let i=0;i<tp&&bal>0.5;i++){const int=bal*r;let pc=emi-int;if(i===tp-1||pc>=bal)pc=bal;bal-=pc;if(bal<0)bal=0;tot+=int}return tot}
 
-<form id="loan-form" novalidate aria-label="Loan input form">
-
-  <!-- STEP 1: Core Loan Basics -->
-  <div class="form-step open" id="step-core">
-    <div class="step-header" role="button" tabindex="0" aria-expanded="true" onclick="toggleStep('step-core')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleStep('step-core')}">
-      <span class="step-number">1</span>
-      <span class="step-title">Loan Basics</span>
-      <span class="step-subtitle">Principal, rate, tenure &amp; start date</span>
-      <span class="step-chevron" aria-hidden="true">▾</span>
-    </div>
-    <div class="step-body" role="region">
-      <div class="field-grid">
-        <div class="field">
-          <div class="label-row"><label for="principal">Principal Amount</label><span class="tooltip-trigger">?<span class="tooltip-text">The total loan amount you're borrowing, before any interest.</span></span></div>
-          <input type="number" id="principal" value="5000000" min="1000" step="1000" required aria-describedby="err-principal">
-          <span class="input-hint">e.g. 5000000 for ₹50 Lakhs</span>
-          <span class="field-error" id="err-principal" role="alert">⚠ Must be at least 1,000</span>
-        </div>
-        <div class="field">
-          <div class="label-row"><label for="annual_rate">Annual Interest Rate (%)</label><span class="tooltip-trigger">?<span class="tooltip-text">The annual interest rate on your loan. For floating loans, this is the initial rate.</span></span></div>
-          <input type="number" id="annual_rate" value="8.5" min="0.01" max="50" step="0.01" required aria-describedby="err-rate">
-          <span class="input-hint">Most home loans: 8–10%</span>
-          <span class="field-error" id="err-rate" role="alert">⚠ Rate must be between 0.01% and 50%</span>
-        </div>
-        <div class="field">
-          <div class="label-row"><label for="tenure_months">Tenure (Months)</label><span class="tooltip-trigger">?<span class="tooltip-text">Total loan repayment period in months. 240 months = 20 years.</span></span></div>
-          <input type="number" id="tenure_months" value="240" min="1" max="600" step="1" required aria-describedby="err-tenure">
-          <span class="input-hint">240 = 20 years</span>
-          <span class="field-error" id="err-tenure" role="alert">⚠ Must be between 1 and 600 months</span>
-        </div>
-        <div class="field">
-          <div class="label-row"><label for="emi_start_date">EMI Start Date</label><span class="tooltip-trigger">?<span class="tooltip-text">The date your first EMI payment is due.</span></span></div>
-          <input type="date" id="emi_start_date" value="2025-04-01" required aria-describedby="err-date">
-          <span class="field-error" id="err-date" role="alert">⚠ Please enter a valid date</span>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- STEP 2: Calculation Settings -->
-  <div class="form-step" id="step-conventions">
-    <div class="step-header" role="button" tabindex="0" aria-expanded="false" onclick="toggleStep('step-conventions')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleStep('step-conventions')}">
-      <span class="step-number">2</span>
-      <span class="step-title">Calculation Settings</span>
-      <span class="step-subtitle">Optional — sensible defaults applied</span>
-      <span class="step-chevron" aria-hidden="true">▾</span>
-    </div>
-    <div class="step-body" role="region">
-      <div class="field-grid three">
-        <div class="field">
-          <div class="label-row"><label for="interest_compounding">Compounding</label><span class="tooltip-trigger">?<span class="tooltip-text"><strong>Monthly:</strong> Interest calculated once per month — standard for most loans.<br><br><strong>Daily:</strong> Interest calculated daily — common in overdraft facilities.</span></span></div>
-          <select id="interest_compounding"><option value="monthly" selected>Monthly (standard)</option><option value="daily">Daily</option></select>
-        </div>
-        <div class="field">
-          <div class="label-row"><label for="day_count_convention">Day Count</label><span class="tooltip-trigger">?<span class="tooltip-text"><strong>30/360:</strong> Every month = 30 days, year = 360. Most common banking convention.<br><br><strong>Actual/365:</strong> Actual calendar days in month ÷ 365.</span></span></div>
-          <select id="day_count_convention"><option value="30_360" selected>30/360 (standard)</option><option value="actual_365">Actual/365</option></select>
-        </div>
-        <div class="field">
-          <div class="label-row"><label for="emi_frequency">EMI Frequency</label><span class="tooltip-trigger">?<span class="tooltip-text"><strong>Monthly:</strong> One payment per month.<br><br><strong>Quarterly:</strong> One payment every 3 months.</span></span></div>
-          <select id="emi_frequency"><option value="monthly" selected>Monthly</option><option value="quarterly">Quarterly</option></select>
-        </div>
-      </div>
-      <div class="field-grid" style="margin-top:1rem;">
-        <div class="field">
-          <div class="label-row"><label for="rounding_mode">Rounding</label><span class="tooltip-trigger">?<span class="tooltip-text"><strong>Nearest Rupee:</strong> EMI rounded to whole rupee (bank standard).<br><br><strong>Exact:</strong> 2 decimal places for precise comparison.</span></span></div>
-          <select id="rounding_mode"><option value="nearest_rupee" selected>Nearest Rupee</option><option value="exact">Exact (2 decimals)</option></select>
-        </div>
-        <div class="field">
-          <div class="label-row"><label for="currency_symbol">Currency Symbol</label></div>
-          <input type="text" id="currency_symbol" value="₹" maxlength="5">
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- STEP 3: Moratorium -->
-  <div class="form-step" id="step-structure">
-    <div class="step-header" role="button" tabindex="0" aria-expanded="false" onclick="toggleStep('step-structure')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleStep('step-structure')}">
-      <span class="step-number">3</span>
-      <span class="step-title">Moratorium &amp; Structure</span>
-      <span class="step-subtitle">Optional — skip if not applicable</span>
-      <span class="step-chevron" aria-hidden="true">▾</span>
-    </div>
-    <div class="step-body" role="region">
-      <div class="field-grid three">
-        <div class="field">
-          <div class="label-row"><label for="moratorium_months">Moratorium (Months)</label><span class="tooltip-trigger">?<span class="tooltip-text">A grace period where you don't pay full EMI. Common during construction or education loans. 0 = none.</span></span></div>
-          <input type="number" id="moratorium_months" value="0" min="0" max="120" step="1">
-          <span class="input-hint">0 = no moratorium</span>
-        </div>
-        <div class="field">
-          <div class="label-row"><label for="moratorium_type">Moratorium Type</label><span class="tooltip-trigger">?<span class="tooltip-text"><strong>Interest Only:</strong> You pay just interest; principal unchanged.<br><br><strong>Interest Capitalized:</strong> No payment; interest added to principal (loan grows).</span></span></div>
-          <select id="moratorium_type"><option value="interest_only" selected>Interest Only</option><option value="interest_capitalized">Interest Capitalized</option></select>
-        </div>
-        <div class="field">
-          <div class="label-row"><label for="schedule_granularity">Schedule View</label></div>
-          <select id="schedule_granularity"><option value="monthly" selected>Monthly</option><option value="yearly">Yearly Summary</option><option value="both">Both</option></select>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- STEP 4: Interest Rate Type -->
-  <div class="form-step" id="step-rates">
-    <div class="step-header" role="button" tabindex="0" aria-expanded="false" onclick="toggleStep('step-rates')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleStep('step-rates')}">
-      <span class="step-number">4</span>
-      <span class="step-title">Interest Rate Type</span>
-      <span class="step-subtitle">Fixed by default — expand for floating rates</span>
-      <span class="step-chevron" aria-hidden="true">▾</span>
-    </div>
-    <div class="step-body" role="region">
-      <div class="field-grid">
-        <div class="field">
-          <div class="label-row"><label for="interest_type">Rate Type</label><span class="tooltip-trigger">?<span class="tooltip-text"><strong>Fixed:</strong> Rate stays the same throughout.<br><br><strong>Floating:</strong> Rate changes periodically based on benchmark + spread. EMI recalculated at each reset.</span></span></div>
-          <select id="interest_type" onchange="toggleFloatingFields()"><option value="fixed" selected>Fixed Rate</option><option value="floating">Floating Rate</option></select>
-        </div>
-      </div>
-      <div id="floating-fields" style="display:none;margin-top:1rem;">
-        <div class="field-grid three">
-          <div class="field">
-            <div class="label-row"><label for="rate_reset_frequency_months">Reset Every (Months)</label><span class="tooltip-trigger">?<span class="tooltip-text">How often the bank recalculates your rate. Common: 3, 6, or 12 months.</span></span></div>
-            <input type="number" id="rate_reset_frequency_months" value="6" min="1" max="60" step="1">
-          </div>
-          <div class="field">
-            <div class="label-row"><label for="benchmark_rate">Benchmark Rate (%)</label><span class="tooltip-trigger">?<span class="tooltip-text">Base rate your loan is linked to (repo rate, MCLR, etc.). Effective rate = benchmark + spread.</span></span></div>
-            <input type="number" id="benchmark_rate" value="6.5" min="0" max="30" step="0.01">
-          </div>
-          <div class="field">
-            <div class="label-row"><label for="spread">Spread / Markup (%)</label><span class="tooltip-trigger">?<span class="tooltip-text">Bank's margin on top of benchmark. Typical: 1.5%–3%.</span></span></div>
-            <input type="number" id="spread" value="2.0" min="0" max="20" step="0.01">
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- STEP 5: Prepayments -->
-  <div class="form-step" id="step-prepay">
-    <div class="step-header" role="button" tabindex="0" aria-expanded="false" onclick="toggleStep('step-prepay')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleStep('step-prepay')}">
-      <span class="step-number">5</span>
-      <span class="step-title">Prepayments</span>
-      <span class="step-subtitle">Optional — see how extra payments save interest</span>
-      <span class="step-chevron" aria-hidden="true">▾</span>
-    </div>
-    <div class="step-body" role="region">
-      <div class="field-grid">
-        <div class="field">
-          <div class="label-row"><label for="recurring_extra_emi">Recurring Extra Payment / Period</label><span class="tooltip-trigger">?<span class="tooltip-text">Additional amount paid every EMI period on top of regular EMI. Even small recurring extras save significant interest over time.</span></span></div>
-          <input type="number" id="recurring_extra_emi" value="0" min="0" step="500">
-          <span class="input-hint">0 = no extra recurring payment</span>
-        </div>
-        <div class="field">
-          <div class="label-row"><label for="prepayment_impact">Prepayment Strategy</label><span class="tooltip-trigger">?<span class="tooltip-text"><strong>Reduce Tenure:</strong> Same EMI, finish earlier — saves more interest overall.<br><br><strong>Reduce EMI:</strong> Lower monthly payment, same tenure — eases cash flow.</span></span></div>
-          <select id="prepayment_impact"><option value="reduce_tenure" selected>Reduce Tenure (saves more)</option><option value="reduce_emi">Reduce EMI (lower payments)</option></select>
-        </div>
-      </div>
-      <div style="margin-top:1rem;">
-        <label style="margin-bottom:.5rem;display:block">Lump-Sum Prepayments</label>
-        <span class="input-hint" style="display:block;margin-bottom:.5rem">Add specific one-time payments on particular dates</span>
-        <div class="prepayment-list" id="prepayment-list" role="list"></div>
-        <button type="button" class="add-prepay-btn" onclick="addPrepaymentRow()"><span aria-hidden="true">+</span> Add Lump-Sum Prepayment</button>
-      </div>
-    </div>
-  </div>
-
-</form>
-
-<div class="actions">
-  <button class="btn btn-primary" id="btn-generate" onclick="calculate()">
-    <span class="spinner" aria-hidden="true"></span>
-    <span class="btn-label">Generate Schedule</span>
-  </button>
-  <button class="btn btn-secondary" onclick="resetForm()">Reset All</button>
-</div>
-
-<!-- OUTPUT SECTION -->
-<div id="output-section" role="region" aria-label="Results" aria-live="polite">
-  <hr class="section-divider">
-  <div class="output-entrance">
-    <div class="output-header">
-      <h2>Your Loan Breakdown</h2>
-      <div><button class="export-btn" onclick="exportCSV()">⤓ Export CSV</button></div>
-    </div>
-    <div class="insights-card" id="insights-card"></div>
-    <div class="summary-grid" id="summary-grid" role="list"></div>
-    <div class="breakdown-section" id="breakdown-section"></div>
-    <details class="assumptions-card" id="assumptions-card">
-      <summary>▸ Assumptions &amp; Methodology</summary>
-      <div id="assumptions-content"></div>
-    </details>
-    <div class="disclaimer" role="note">
-      <strong>Disclaimer:</strong> This is an estimation tool for planning purposes. Actual bank schedules may vary slightly due to rounding, holiday adjustments, and internal accounting conventions. Always verify with your lender.
-    </div>
-    <div class="tab-bar" id="tab-bar" role="tablist"></div>
-    <div id="table-monthly" role="tabpanel" style="display:none"></div>
-    <div id="table-yearly" role="tabpanel" style="display:none"></div>
-  </div>
-</div>
-
-</div>
-
-<script>
-"use strict";
-
-// ═══════════════════════════════════════════════════
-// A — UI: ACCORDION, VALIDATION, TOOLTIPS
-// ═══════════════════════════════════════════════════
-
-function toggleStep(id) {
-  var s = document.getElementById(id);
-  var isOpen = s.classList.contains('open');
-  s.classList.toggle('open');
-  s.querySelector('.step-header').setAttribute('aria-expanded', !isOpen);
-}
-
-function toggleFloatingFields() {
-  document.getElementById('floating-fields').style.display =
-    document.getElementById('interest_type').value === 'floating' ? '' : 'none';
-}
-
-function addPrepaymentRow() {
-  var list = document.getElementById('prepayment-list');
-  var row = document.createElement('div');
-  row.className = 'prepayment-row';
-  row.setAttribute('role', 'listitem');
-  row.innerHTML =
-    '<input type="date" class="pp-date" aria-label="Prepayment date">' +
-    '<input type="number" class="pp-amount" placeholder="Amount" min="0" step="1000" aria-label="Prepayment amount">' +
-    '<button type="button" class="btn-icon" onclick="this.parentElement.remove()" title="Remove" aria-label="Remove">✕</button>';
-  list.appendChild(row);
-}
-
-function getPrepayments() {
-  var list = [];
-  document.querySelectorAll('.prepayment-row').forEach(function(r) {
-    var d = r.querySelector('.pp-date').value;
-    var a = parseFloat(r.querySelector('.pp-amount').value);
-    if (d && a > 0) list.push({ date: new Date(d + 'T00:00:00'), amount: a });
-  });
-  return list.sort(function(a, b) { return a.date - b.date; });
-}
-
-function resetForm() {
-  document.getElementById('principal').value = 5000000;
-  document.getElementById('annual_rate').value = 8.5;
-  document.getElementById('tenure_months').value = 240;
-  document.getElementById('emi_start_date').value = '2025-04-01';
-  document.getElementById('moratorium_months').value = 0;
-  document.getElementById('recurring_extra_emi').value = 0;
-  document.getElementById('interest_type').value = 'fixed';
-  toggleFloatingFields();
-  document.getElementById('prepayment-list').innerHTML = '';
-  document.getElementById('output-section').classList.remove('visible');
-  clearAllErrors();
-}
-
-// ═══════════════════════════════════════════════════
-// B — VALIDATION
-// ═══════════════════════════════════════════════════
-
-function validateInputs() {
-  var valid = true;
-  clearAllErrors();
-  var p = parseFloat(document.getElementById('principal').value);
-  if (!p || p < 1000) { showError('principal', 'err-principal'); valid = false; }
-  var r = parseFloat(document.getElementById('annual_rate').value);
-  if (!r || r < 0.01 || r > 50) { showError('annual_rate', 'err-rate'); valid = false; }
-  var t = parseInt(document.getElementById('tenure_months').value);
-  if (!t || t < 1 || t > 600) { showError('tenure_months', 'err-tenure'); valid = false; }
-  var d = document.getElementById('emi_start_date').value;
-  if (!d || isNaN(new Date(d + 'T00:00:00').getTime())) { showError('emi_start_date', 'err-date'); valid = false; }
-  if (!valid) {
-    var cs = document.getElementById('step-core');
-    if (!cs.classList.contains('open')) toggleStep('step-core');
+function generateSchedule(cfg){
+  const pm=cfg.emiFrequency==='quarterly'?3:1,totalPeriods=Math.ceil(cfg.tenureMonths/pm);
+  const schedule=[];let outstanding=cfg.principal,currentRate=cfg.annualRate,remaining=totalPeriods,currentEMI=0,totalInt=0,totalPP=0;
+  const morPeriods=Math.ceil(cfg.moratoriumMonths/pm);
+  for(let m=0;m<morPeriods&&outstanding>0;m++){
+    const ps=addMonths(cfg.emiStartDate,m*pm),pe=addMonths(cfg.emiStartDate,(m+1)*pm);let interest=0;
+    if(cfg.emiFrequency==='quarterly'&&cfg.compounding==='monthly'){let tp=outstanding;for(let sm=0;sm<3;sm++){const si=computePeriodInterest(tp,currentRate,cfg.compounding,cfg.dayCount,addMonths(ps,sm),addMonths(ps,sm+1));interest+=si;if(cfg.moratoriumType==='interest_capitalized')tp+=si}}
+    else interest=computePeriodInterest(outstanding,currentRate,cfg.compounding,cfg.dayCount,ps,pe);
+    const op=outstanding;
+    if(cfg.moratoriumType==='interest_only'){const ri=applyRounding(interest,cfg.rounding);schedule.push({period:m+1,date:pe,opening:op,emi:ri,interest:ri,principalComp:0,prepayment:0,closing:outstanding,isMoratorium:true,isPrepay:false});totalInt+=ri}
+    else{outstanding+=interest;schedule.push({period:m+1,date:pe,opening:op,emi:0,interest,principalComp:0,prepayment:0,closing:outstanding,isMoratorium:true,isPrepay:false})}
   }
-  return valid;
-}
-
-function showError(inputId, errorId) {
-  document.getElementById(inputId).classList.add('error');
-  document.getElementById(errorId).classList.add('visible');
-  document.getElementById('step-core').classList.add('has-error');
-}
-
-function clearAllErrors() {
-  document.querySelectorAll('input.error').forEach(function(el) { el.classList.remove('error'); });
-  document.querySelectorAll('.field-error.visible').forEach(function(el) { el.classList.remove('visible'); });
-  document.querySelectorAll('.form-step.has-error').forEach(function(el) { el.classList.remove('has-error'); });
-}
-
-document.querySelectorAll('#step-core input').forEach(function(inp) {
-  inp.addEventListener('input', clearAllErrors);
-});
-
-// ═══════════════════════════════════════════════════
-// C — FINANCIAL CALCULATION ENGINE (pure functions)
-// ═══════════════════════════════════════════════════
-
-function addMonths(date, months) {
-  var d = new Date(date);
-  var day = d.getDate();
-  d.setMonth(d.getMonth() + months);
-  if (d.getDate() !== day) d.setDate(0);
-  return d;
-}
-
-function daysBetween(a, b) { return Math.round((b - a) / 86400000); }
-
-function fmtDate(d) {
-  var y = d.getFullYear();
-  var m = String(d.getMonth() + 1).padStart(2, '0');
-  var dy = String(d.getDate()).padStart(2, '0');
-  return y + '-' + m + '-' + dy;
-}
-
-/**
- * EMI = P × r × (1+r)^n / ((1+r)^n − 1)
- * P = principal, r = periodic rate, n = periods
- */
-function computeEMI(P, r, n) {
-  if (r === 0) return P / n;
-  if (n <= 0) return 0;
-  var factor = Math.pow(1 + r, n);
-  return P * r * factor / (factor - 1);
-}
-
-/**
- * Period interest:
- *   Monthly + 30/360 → P × (rate/12)
- *   Monthly + Actual/365 → P × rate × days / 365
- *   Daily + 30/360 → P × (rate/360) × 30
- *   Daily + Actual/365 → P × (rate/365) × days
- * NO rounding on intermediate values.
- */
-function computePeriodInterest(principal, annualRate, compounding, dayCount, periodStart, periodEnd) {
-  var rate = annualRate / 100;
-  if (compounding === 'monthly') {
-    if (dayCount === '30_360') return principal * (rate / 12);
-    return principal * rate * daysBetween(periodStart, periodEnd) / 365;
+  remaining=totalPeriods-morPeriods;let r=periodicRate(currentRate,cfg.compounding,cfg.dayCount);
+  if(cfg.emiFrequency==='quarterly'&&cfg.compounding==='monthly')r=Math.pow(1+periodicRate(currentRate,'monthly',cfg.dayCount),3)-1;
+  currentEMI=applyRounding(computeEMI(outstanding,r,remaining),cfg.rounding);
+  const baseInt=computeBaselineInterest(cfg.principal,cfg.annualRate,cfg.tenureMonths,pm,cfg.compounding,cfg.dayCount,cfg.rounding);
+  const ppMap={};cfg.prepayments.forEach(pp=>{const k=fmtDate(pp.date).slice(0,7);ppMap[k]=(ppMap[k]||0)+pp.amount});
+  let pidx=morPeriods,mfr=0;
+  while(outstanding>0.5&&remaining>0){
+    pidx++;const ps=addMonths(cfg.emiStartDate,(pidx-1)*pm),pe=addMonths(cfg.emiStartDate,pidx*pm),pk=fmtDate(ps).slice(0,7);
+    let ppAmt=0;if(ppMap[pk])ppAmt+=ppMap[pk];if(cfg.recurringExtra>0)ppAmt+=cfg.recurringExtra;
+    if(ppAmt>=outstanding){schedule.push({period:pidx,date:pe,opening:outstanding,emi:0,interest:0,principalComp:0,prepayment:applyRounding(outstanding,cfg.rounding),closing:0,isMoratorium:false,isPrepay:true});totalPP+=outstanding;outstanding=0;break}
+    outstanding-=ppAmt;totalPP+=ppAmt;
+    if(cfg.interestType==='floating'){mfr+=pm;if(mfr>=cfg.resetFreq){mfr=0;currentRate=cfg.benchmarkRate+cfg.spread;r=periodicRate(currentRate,cfg.compounding,cfg.dayCount);if(cfg.emiFrequency==='quarterly'&&cfg.compounding==='monthly')r=Math.pow(1+periodicRate(currentRate,'monthly',cfg.dayCount),3)-1;currentEMI=applyRounding(computeEMI(outstanding,r,remaining),cfg.rounding)}}
+    if(ppAmt>0&&cfg.prepayImpact==='reduce_emi'){r=periodicRate(currentRate,cfg.compounding,cfg.dayCount);if(cfg.emiFrequency==='quarterly'&&cfg.compounding==='monthly')r=Math.pow(1+periodicRate(currentRate,'monthly',cfg.dayCount),3)-1;currentEMI=applyRounding(computeEMI(outstanding,r,remaining),cfg.rounding)}
+    const openP=outstanding;let int2=0;
+    if(cfg.emiFrequency==='quarterly'&&cfg.compounding==='monthly'){for(let sm=0;sm<3;sm++)int2+=computePeriodInterest(outstanding,currentRate,'monthly',cfg.dayCount,addMonths(ps,sm),addMonths(ps,sm+1))}
+    else int2=computePeriodInterest(outstanding,currentRate,cfg.compounding,cfg.dayCount,ps,pe);
+    let emi=currentEMI,pc=emi-int2;
+    if(remaining===1||pc>=outstanding){pc=outstanding;emi=applyRounding(pc+int2,cfg.rounding)}
+    if(pc<0)pc=0;outstanding-=pc;if(outstanding<0.005)outstanding=0;totalInt+=int2;
+    schedule.push({period:pidx,date:pe,opening:openP,emi:applyRounding(emi,cfg.rounding),interest:int2,principalComp:pc,prepayment:applyRounding(ppAmt,cfg.rounding),closing:outstanding,isMoratorium:false,isPrepay:ppAmt>0});
+    remaining--;
   }
-  var days = daysBetween(periodStart, periodEnd);
-  if (dayCount === '30_360') return principal * (rate / 360) * 30;
-  return principal * (rate / 365) * days;
+  let totalPaid=0;schedule.forEach(row=>{totalPaid+=row.emi+row.prepayment});
+  return{schedule,summary:{totalInterestPaid:totalInt,totalAmountPaid:totalPaid,interestSaved:Math.max(0,baseInt-totalInt),effectiveTenure:schedule.length,totalPrepayments:totalPP,emi:currentEMI,originalTenure:totalPeriods}};
 }
 
-function periodicRate(annualRate, compounding, dayCount) {
-  var r = annualRate / 100;
-  if (compounding === 'monthly') return r / 12;
-  if (dayCount === '30_360') return r / 360 * 30;
-  return r / 12;
+/* ═══ HELP TOOLTIP ═══ */
+function HelpTip({text}){
+  const[open,setOpen]=useState(false);const ref=useRef(null);
+  useEffect(()=>{if(!open)return;const h=e=>{if(ref.current&&!ref.current.contains(e.target))setOpen(false)};document.addEventListener('click',h,true);return()=>document.removeEventListener('click',h,true)},[open]);
+  return React.createElement('span',{ref,style:{position:'relative',display:'inline-flex'}},
+    React.createElement('button',{onClick:e=>{e.stopPropagation();setOpen(!open)},style:{width:16,height:16,borderRadius:'50%',border:'1px solid '+(open?'#4f8ff7':'rgba(255,255,255,0.1)'),background:open?'rgba(79,143,247,0.15)':'rgba(255,255,255,0.04)',color:open?'#4f8ff7':'#545d68',fontSize:9,fontWeight:700,cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',fontFamily:'monospace',transition:'all 0.15s',flexShrink:0}},'?'),
+    open&&React.createElement('div',{style:{position:'absolute',top:'calc(100% + 8px)',left:'50%',transform:'translateX(-50%)',width:260,background:'#252d3f',border:'1px solid rgba(255,255,255,0.1)',borderRadius:8,padding:'10px 12px',fontSize:13,color:'#8b949e',lineHeight:1.6,boxShadow:'0 8px 32px rgba(0,0,0,0.5)',zIndex:100}},React.createElement('div',{dangerouslySetInnerHTML:{__html:text}}))
+  );
 }
 
-function applyRounding(value, mode) {
-  if (mode === 'nearest_rupee') return Math.round(value);
-  return Math.round(value * 100) / 100;
+/* ═══ FIELD ═══ */
+function Field({label,help,hint,error,children}){
+  return React.createElement('div',{style:{display:'flex',flexDirection:'column',gap:4}},
+    React.createElement('div',{style:{display:'flex',alignItems:'center',gap:6}},
+      React.createElement('label',{style:{fontSize:11,fontWeight:600,textTransform:'uppercase',letterSpacing:'0.06em',color:'#8b949e',fontFamily:"'JetBrains Mono',monospace"}},label),
+      help&&React.createElement(HelpTip,{text:help})
+    ),
+    children,
+    hint&&React.createElement('span',{style:{fontSize:11,color:'#545d68',fontStyle:'italic'}},hint),
+    error&&React.createElement('span',{style:{fontSize:11,color:'#e5534b',fontWeight:500}},error)
+  );
 }
 
-function fmtCurrency(value, symbol, mode) {
-  var num = mode === 'nearest_rupee' ? Math.round(value) : Math.round(value * 100) / 100;
-  return symbol + num.toLocaleString('en-IN', {
-    minimumFractionDigits: mode === 'exact' ? 2 : 0,
-    maximumFractionDigits: mode === 'exact' ? 2 : 0,
-  });
-}
+const IS={fontFamily:"'Manrope',system-ui,sans-serif",fontSize:14,padding:'9px 12px',background:'#0e1219',border:'1px solid rgba(255,255,255,0.06)',borderRadius:6,color:'#e6edf3',width:'100%',outline:'none',transition:'all 0.15s'};
+const IE={...IS,borderColor:'#e5534b',boxShadow:'0 0 0 3px rgba(229,83,75,0.1)'};
+const SS={...IS,cursor:'pointer'};
+const CS={background:'#171c27',border:'1px solid rgba(255,255,255,0.06)',borderRadius:14,padding:'20px 24px',marginBottom:16};
+const CT={fontFamily:"'JetBrains Mono',monospace",fontSize:10.5,fontWeight:600,textTransform:'uppercase',letterSpacing:'0.1em',color:'#4f8ff7',marginBottom:16,paddingBottom:10,borderBottom:'1px solid rgba(255,255,255,0.06)'};
+const MS={fontFamily:"'JetBrains Mono',monospace",fontSize:10.5,fontWeight:500,letterSpacing:'0.04em'};
 
-function fmtLakhs(value, symbol) {
-  if (Math.abs(value) >= 10000000) return symbol + (value / 10000000).toFixed(2) + ' Cr';
-  if (Math.abs(value) >= 100000) return symbol + (value / 100000).toFixed(2) + ' L';
-  return symbol + Math.round(value).toLocaleString('en-IN');
-}
+/* ═══ APP ═══ */
+function App(){
+  const[principal,setPrincipal]=useState('5000000');
+  const[rate,setRate]=useState('8.5');
+  const[tenure,setTenure]=useState('240');
+  const[startDate,setStartDate]=useState('2025-04-01');
+  const[extraEmi,setExtraEmi]=useState('0');
+  const[ppImpact,setPpImpact]=useState('reduce_tenure');
+  const[lumpSums,setLumpSums]=useState([]);
+  const[showAdv,setShowAdv]=useState(false);
+  const[compounding,setCompounding]=useState('monthly');
+  const[dayCount,setDayCount]=useState('30_360');
+  const[frequency,setFrequency]=useState('monthly');
+  const[rounding,setRounding]=useState('nearest_rupee');
+  const[currency,setCurrency]=useState('₹');
+  const[granularity,setGranularity]=useState('monthly');
+  const[morMonths,setMorMonths]=useState('0');
+  const[morType,setMorType]=useState('interest_only');
+  const[rateType,setRateType]=useState('fixed');
+  const[resetFreq,setResetFreq]=useState('6');
+  const[benchmark,setBenchmark]=useState('6.5');
+  const[spread,setSpread]=useState('2.0');
+  const[errors,setErrors]=useState({});
+  const[result,setResult]=useState(null);
+  const[loading,setLoading]=useState(false);
+  const[activeTab,setActiveTab]=useState('monthly');
+  const resultRef=useRef(null);
 
-function computeBaselineInterest(principal, annualRate, tenureMonths, periodMonths, compounding, dayCount, rounding) {
-  var totalPeriods = Math.ceil(tenureMonths / periodMonths);
-  var r = periodicRate(annualRate, compounding, dayCount);
-  if (periodMonths === 3 && compounding === 'monthly') {
-    r = Math.pow(1 + periodicRate(annualRate, 'monthly', dayCount), 3) - 1;
-  }
-  var emi = applyRounding(computeEMI(principal, r, totalPeriods), rounding);
-  var balance = principal, totalInt = 0;
-  for (var i = 0; i < totalPeriods && balance > 0.5; i++) {
-    var interest = balance * r;
-    var pc = emi - interest;
-    if (i === totalPeriods - 1 || pc >= balance) pc = balance;
-    balance -= pc;
-    if (balance < 0) balance = 0;
-    totalInt += interest;
-  }
-  return totalInt;
-}
+  const validate=useCallback(()=>{
+    const e={};
+    if(!parseFloat(principal)||parseFloat(principal)<1000)e.principal='Min 1,000';
+    if(!parseFloat(rate)||parseFloat(rate)<0.01||parseFloat(rate)>50)e.rate='0.01–50%';
+    if(!parseInt(tenure)||parseInt(tenure)<1||parseInt(tenure)>600)e.tenure='1–600';
+    if(!startDate||isNaN(new Date(startDate+'T00:00:00').getTime()))e.startDate='Invalid';
+    setErrors(e);return Object.keys(e).length===0;
+  },[principal,rate,tenure,startDate]);
 
-/** Main schedule generator — pure data in, pure data out */
-function generateSchedule(cfg) {
-  var periodMonths = cfg.emiFrequency === 'quarterly' ? 3 : 1;
-  var totalPeriods = Math.ceil(cfg.tenureMonths / periodMonths);
-  var schedule = [];
-  var outstanding = cfg.principal;
-  var currentRate = cfg.annualRate;
-  var remainingPeriods = totalPeriods;
-  var currentEMI = 0;
-  var totalInterestPaid = 0, totalPrepayments = 0;
-  var moratoriumPeriods = Math.ceil(cfg.moratoriumMonths / periodMonths);
-
-  // Phase 1: Moratorium
-  for (var m = 0; m < moratoriumPeriods && outstanding > 0; m++) {
-    var ps = addMonths(cfg.emiStartDate, m * periodMonths);
-    var pe = addMonths(cfg.emiStartDate, (m + 1) * periodMonths);
-    var interest = 0;
-    if (cfg.emiFrequency === 'quarterly' && cfg.compounding === 'monthly') {
-      var tp = outstanding;
-      for (var sm = 0; sm < 3; sm++) {
-        var ss = addMonths(ps, sm), se = addMonths(ps, sm + 1);
-        var si = computePeriodInterest(tp, currentRate, cfg.compounding, cfg.dayCount, ss, se);
-        interest += si;
-        if (cfg.moratoriumType === 'interest_capitalized') tp += si;
-      }
-    } else {
-      interest = computePeriodInterest(outstanding, currentRate, cfg.compounding, cfg.dayCount, ps, pe);
-    }
-    var op = outstanding;
-    if (cfg.moratoriumType === 'interest_only') {
-      var ri = applyRounding(interest, cfg.rounding);
-      schedule.push({ period: m+1, date: pe, opening: op, emi: ri, interest: ri, principalComp: 0, prepayment: 0, closing: outstanding, isMoratorium: true, isPrepay: false });
-      totalInterestPaid += ri;
-    } else {
-      outstanding += interest;
-      schedule.push({ period: m+1, date: pe, opening: op, emi: 0, interest: interest, principalComp: 0, prepayment: 0, closing: outstanding, isMoratorium: true, isPrepay: false });
-    }
-  }
-
-  remainingPeriods = totalPeriods - moratoriumPeriods;
-  var r = periodicRate(currentRate, cfg.compounding, cfg.dayCount);
-  if (cfg.emiFrequency === 'quarterly' && cfg.compounding === 'monthly') {
-    r = Math.pow(1 + periodicRate(currentRate, 'monthly', cfg.dayCount), 3) - 1;
-  }
-  currentEMI = applyRounding(computeEMI(outstanding, r, remainingPeriods), cfg.rounding);
-
-  var baselineInt = computeBaselineInterest(cfg.principal, cfg.annualRate, cfg.tenureMonths, periodMonths, cfg.compounding, cfg.dayCount, cfg.rounding);
-
-  // Prepayment map
-  var prepayMap = {};
-  cfg.prepayments.forEach(function(pp) {
-    var key = fmtDate(pp.date).slice(0, 7);
-    prepayMap[key] = (prepayMap[key] || 0) + pp.amount;
-  });
-
-  // Phase 2: Regular EMI
-  var periodIndex = moratoriumPeriods, monthsFromReset = 0;
-  while (outstanding > 0.5 && remainingPeriods > 0) {
-    periodIndex++;
-    var ps2 = addMonths(cfg.emiStartDate, (periodIndex - 1) * periodMonths);
-    var pe2 = addMonths(cfg.emiStartDate, periodIndex * periodMonths);
-    var pKey = fmtDate(ps2).slice(0, 7);
-
-    var prepay = 0;
-    if (prepayMap[pKey]) prepay += prepayMap[pKey];
-    if (cfg.recurringExtra > 0) prepay += cfg.recurringExtra;
-
-    if (prepay >= outstanding) {
-      prepay = outstanding;
-      schedule.push({ period: periodIndex, date: pe2, opening: outstanding, emi: 0, interest: 0, principalComp: 0, prepayment: applyRounding(prepay, cfg.rounding), closing: 0, isMoratorium: false, isPrepay: true });
-      totalPrepayments += prepay;
-      outstanding = 0;
-      break;
-    }
-    outstanding -= prepay;
-    totalPrepayments += prepay;
-
-    // Floating rate reset
-    if (cfg.interestType === 'floating') {
-      monthsFromReset += periodMonths;
-      if (monthsFromReset >= cfg.resetFreq) {
-        monthsFromReset = 0;
-        currentRate = cfg.benchmarkRate + cfg.spread;
-        r = periodicRate(currentRate, cfg.compounding, cfg.dayCount);
-        if (cfg.emiFrequency === 'quarterly' && cfg.compounding === 'monthly') {
-          r = Math.pow(1 + periodicRate(currentRate, 'monthly', cfg.dayCount), 3) - 1;
-        }
-        currentEMI = applyRounding(computeEMI(outstanding, r, remainingPeriods), cfg.rounding);
-      }
-    }
-
-    if (prepay > 0 && cfg.prepayImpact === 'reduce_emi') {
-      r = periodicRate(currentRate, cfg.compounding, cfg.dayCount);
-      if (cfg.emiFrequency === 'quarterly' && cfg.compounding === 'monthly') {
-        r = Math.pow(1 + periodicRate(currentRate, 'monthly', cfg.dayCount), 3) - 1;
-      }
-      currentEMI = applyRounding(computeEMI(outstanding, r, remainingPeriods), cfg.rounding);
-    }
-
-    var openP = outstanding;
-    var int2 = 0;
-    if (cfg.emiFrequency === 'quarterly' && cfg.compounding === 'monthly') {
-      var tP = outstanding;
-      for (var sm2 = 0; sm2 < 3; sm2++) {
-        int2 += computePeriodInterest(tP, currentRate, 'monthly', cfg.dayCount, addMonths(ps2, sm2), addMonths(ps2, sm2 + 1));
-      }
-    } else {
-      int2 = computePeriodInterest(outstanding, currentRate, cfg.compounding, cfg.dayCount, ps2, pe2);
-    }
-
-    var emi2 = currentEMI;
-    var pc2 = emi2 - int2;
-    if (remainingPeriods === 1 || pc2 >= outstanding) {
-      pc2 = outstanding;
-      emi2 = applyRounding(pc2 + int2, cfg.rounding);
-    }
-    if (pc2 < 0) pc2 = 0;
-    outstanding -= pc2;
-    if (outstanding < 0.005) outstanding = 0;
-    totalInterestPaid += int2;
-
-    schedule.push({ period: periodIndex, date: pe2, opening: openP, emi: applyRounding(emi2, cfg.rounding), interest: int2, principalComp: pc2, prepayment: applyRounding(prepay, cfg.rounding), closing: outstanding, isMoratorium: false, isPrepay: prepay > 0 });
-    remainingPeriods--;
-  }
-
-  var totalPaid = 0;
-  schedule.forEach(function(row) { totalPaid += row.emi + row.prepayment; });
-
-  return {
-    schedule: schedule,
-    summary: {
-      totalInterestPaid: totalInterestPaid,
-      totalAmountPaid: totalPaid,
-      interestSaved: Math.max(0, baselineInt - totalInterestPaid),
-      effectiveTenure: schedule.length,
-      totalPrepayments: totalPrepayments,
-      emi: currentEMI,
-      originalTenure: totalPeriods
-    }
+  const calculate=()=>{
+    if(!validate())return;setLoading(true);
+    setTimeout(()=>{
+      try{
+        const cfg={principal:parseFloat(principal),annualRate:parseFloat(rate),tenureMonths:parseInt(tenure),emiStartDate:new Date(startDate+'T00:00:00'),compounding,dayCount,emiFrequency:frequency,moratoriumMonths:parseInt(morMonths)||0,moratoriumType:morType,interestType:rateType,resetFreq:parseInt(resetFreq)||6,benchmarkRate:parseFloat(benchmark)||0,spread:parseFloat(spread)||0,prepayments:lumpSums.filter(l=>l.date&&l.amount>0).map(l=>({date:new Date(l.date+'T00:00:00'),amount:l.amount})),recurringExtra:parseFloat(extraEmi)||0,prepayImpact:ppImpact,rounding,currency:currency||'₹'};
+        const res=generateSchedule(cfg);setResult({...res,cfg});setActiveTab('monthly');
+        setTimeout(()=>resultRef.current?.scrollIntoView({behavior:'smooth',block:'start'}),100);
+      }catch(err){console.error(err)}
+      setLoading(false);
+    },80);
   };
-}
 
-// ═══════════════════════════════════════════════════
-// D — UI RENDERING
-// ═══════════════════════════════════════════════════
-
-function calculate() {
-  if (!validateInputs()) return;
-  var btn = document.getElementById('btn-generate');
-  btn.classList.add('loading');
-  btn.disabled = true;
-  setTimeout(function() {
-    try {
-      var cfg = gatherConfig();
-      var result = generateSchedule(cfg);
-      renderOutput(cfg, result.schedule, result.summary);
-    } catch (err) {
-      console.error(err);
-      alert('Calculation error — please check your inputs.');
-    } finally {
-      btn.classList.remove('loading');
-      btn.disabled = false;
-    }
-  }, 120);
-}
-
-function gatherConfig() {
-  return {
-    principal: parseFloat(document.getElementById('principal').value),
-    annualRate: parseFloat(document.getElementById('annual_rate').value),
-    tenureMonths: parseInt(document.getElementById('tenure_months').value),
-    emiStartDate: new Date(document.getElementById('emi_start_date').value + 'T00:00:00'),
-    compounding: document.getElementById('interest_compounding').value,
-    dayCount: document.getElementById('day_count_convention').value,
-    emiFrequency: document.getElementById('emi_frequency').value,
-    moratoriumMonths: parseInt(document.getElementById('moratorium_months').value) || 0,
-    moratoriumType: document.getElementById('moratorium_type').value,
-    interestType: document.getElementById('interest_type').value,
-    resetFreq: parseInt(document.getElementById('rate_reset_frequency_months').value) || 6,
-    benchmarkRate: parseFloat(document.getElementById('benchmark_rate').value) || 0,
-    spread: parseFloat(document.getElementById('spread').value) || 0,
-    prepayments: getPrepayments(),
-    recurringExtra: parseFloat(document.getElementById('recurring_extra_emi').value) || 0,
-    prepayImpact: document.getElementById('prepayment_impact').value,
-    granularity: document.getElementById('schedule_granularity').value,
-    rounding: document.getElementById('rounding_mode').value,
-    currency: document.getElementById('currency_symbol').value || '₹'
+  const exportCSV=()=>{
+    if(!result)return;const{cfg}=result,fc=v=>fmtCurrency(v,cfg.currency,cfg.rounding);
+    const h='"#","Date","Opening","EMI","Interest","Principal","Prepayment","Closing"';
+    const rows=result.schedule.map(r=>`"${r.period}","${fmtDate(r.date)}","${fc(r.opening)}","${fc(r.emi)}","${fc(r.interest)}","${fc(r.principalComp)}","${r.prepayment>0?fc(r.prepayment):''}","${fc(r.closing)}"`);
+    const blob=new Blob([h+'\n'+rows.join('\n')],{type:'text/csv'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='amortization.csv';a.click();
   };
+
+  const G2={display:'grid',gridTemplateColumns:'1fr 1fr',gap:16};
+  const G3={display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:16};
+
+  return React.createElement('div',{style:{fontFamily:"'Manrope',system-ui,sans-serif",background:'#0c0f14',color:'#e6edf3',minHeight:'100vh'}},
+
+    /* HERO */
+    React.createElement('div',{style:{textAlign:'center',padding:'40px 24px 28px',borderBottom:'1px solid rgba(255,255,255,0.06)',background:'radial-gradient(ellipse 60% 50% at 50% 0%,rgba(79,143,247,0.07) 0%,transparent 70%)'}},
+      React.createElement('h1',{style:{fontFamily:"'Fraunces',Georgia,serif",fontSize:32,fontWeight:600,letterSpacing:'-0.02em'}},'Loan Amortization Engine'),
+      React.createElement('p',{style:{color:'#8b949e',marginTop:8,fontSize:15,maxWidth:520,marginLeft:'auto',marginRight:'auto'}},'See where every rupee goes — EMI breakdown, prepayment savings, and the true cost of borrowing.'),
+      React.createElement('div',{style:{display:'flex',gap:20,justifyContent:'center',marginTop:14,flexWrap:'wrap'}},
+        ['Reducing-Balance','Bank-Grade Accuracy','100% Client-Side'].map(t=>
+          React.createElement('span',{key:t,style:{...MS,color:'#545d68',display:'flex',alignItems:'center',gap:5}},
+            React.createElement('span',{style:{width:5,height:5,borderRadius:'50%',background:'#3fb950',boxShadow:'0 0 6px rgba(63,185,80,0.4)'}}),t
+          )
+        )
+      )
+    ),
+
+    React.createElement('div',{style:{maxWidth:720,margin:'0 auto',padding:'28px 20px 60px'}},
+
+      /* CORE INPUTS */
+      React.createElement('div',{style:{...CS,borderColor:Object.keys(errors).length?'#e5534b':undefined}},
+        React.createElement('div',{style:CT},'Loan Details'),
+        React.createElement('div',{style:G2},
+          React.createElement(Field,{label:'Principal Amount',help:'The total loan amount you\'re borrowing, before any interest.',hint:'e.g. 5000000 = ₹50 Lakhs',error:errors.principal},
+            React.createElement('input',{style:errors.principal?IE:IS,type:'number',value:principal,onChange:e=>{setPrincipal(e.target.value);setErrors({})}})
+          ),
+          React.createElement(Field,{label:'Annual Rate (%)',help:'Yearly interest rate on your loan.',hint:'Most home loans: 8–10%',error:errors.rate},
+            React.createElement('input',{style:errors.rate?IE:IS,type:'number',value:rate,onChange:e=>{setRate(e.target.value);setErrors({})},step:'0.01'})
+          ),
+          React.createElement(Field,{label:'Tenure (Months)',help:'Total repayment period. 120=10yr, 240=20yr, 360=30yr.',hint:'240 = 20 years',error:errors.tenure},
+            React.createElement('input',{style:errors.tenure?IE:IS,type:'number',value:tenure,onChange:e=>{setTenure(e.target.value);setErrors({})}})
+          ),
+          React.createElement(Field,{label:'EMI Start Date',help:'Date of your first EMI payment.',error:errors.startDate},
+            React.createElement('input',{style:errors.startDate?IE:IS,type:'date',value:startDate,onChange:e=>{setStartDate(e.target.value);setErrors({})}})
+          )
+        )
+      ),
+
+      /* PREPAYMENTS */
+      React.createElement('div',{style:CS},
+        React.createElement('div',{style:CT},'Prepayments ',React.createElement('span',{style:{fontWeight:400,textTransform:'none',letterSpacing:0,color:'#545d68'}},'— optional')),
+        React.createElement('div',{style:G2},
+          React.createElement(Field,{label:'Extra Payment / Month',help:'Fixed extra on top of EMI monthly. Even ₹5,000/mo saves lakhs.',hint:'0 = none'},
+            React.createElement('input',{style:IS,type:'number',value:extraEmi,onChange:e=>setExtraEmi(e.target.value)})
+          ),
+          React.createElement(Field,{label:'Strategy',help:'<strong>Reduce Tenure:</strong> Same EMI, finish earlier — saves more.<br/><br/><strong>Reduce EMI:</strong> Lower payment, same tenure.'},
+            React.createElement('select',{style:SS,value:ppImpact,onChange:e=>setPpImpact(e.target.value)},
+              React.createElement('option',{value:'reduce_tenure'},'Reduce Tenure (saves more)'),
+              React.createElement('option',{value:'reduce_emi'},'Reduce EMI (easier cash flow)')
+            )
+          )
+        ),
+        lumpSums.map((ls,i)=>
+          React.createElement('div',{key:i,style:{display:'flex',gap:8,alignItems:'center',marginTop:10}},
+            React.createElement('input',{style:{...IS,flex:1},type:'date',value:ls.date,onChange:e=>{const n=[...lumpSums];n[i]={...n[i],date:e.target.value};setLumpSums(n)}}),
+            React.createElement('input',{style:{...IS,flex:1},type:'number',placeholder:'Amount',value:ls.amount,onChange:e=>{const n=[...lumpSums];n[i]={...n[i],amount:parseFloat(e.target.value)||''};setLumpSums(n)}}),
+            React.createElement('button',{onClick:()=>setLumpSums(lumpSums.filter((_,idx)=>idx!==i)),style:{width:30,height:30,borderRadius:6,border:'1px solid rgba(255,255,255,0.06)',background:'#0e1219',color:'#8b949e',cursor:'pointer',fontSize:14,display:'flex',alignItems:'center',justifyContent:'center'}},'✕')
+          )
+        ),
+        React.createElement('button',{onClick:()=>setLumpSums([...lumpSums,{date:'',amount:''}]),style:{...MS,color:'#4f8ff7',background:'rgba(79,143,247,0.1)',border:'1px dashed rgba(79,143,247,0.3)',borderRadius:6,padding:'7px 14px',cursor:'pointer',marginTop:12}},'+  Add Lump-Sum')
+      ),
+
+      /* ADVANCED TOGGLE */
+      React.createElement('button',{onClick:()=>setShowAdv(!showAdv),style:{display:'flex',alignItems:'center',gap:8,cursor:'pointer',padding:'14px 0',color:'#545d68',fontSize:14,fontWeight:500,border:'none',background:'none',fontFamily:"'Manrope',sans-serif"}},
+        React.createElement('span',{style:{...MS,transition:'transform 0.2s',transform:showAdv?'rotate(180deg)':'none'}},'▾'),
+        'Advanced Options',
+        React.createElement('span',{style:{fontSize:11.5,color:'#3d4550'}},'— moratorium, floating rates, conventions')
+      ),
+
+      showAdv&&React.createElement('div',null,
+        /* Moratorium */
+        React.createElement('div',{style:CS},
+          React.createElement('div',{style:CT},'Moratorium'),
+          React.createElement('div',{style:G2},
+            React.createElement(Field,{label:'Period (Months)',help:'Grace period at start. Common in construction/education loans. 0=none.',hint:'0 = none'},
+              React.createElement('input',{style:IS,type:'number',value:morMonths,onChange:e=>setMorMonths(e.target.value)})
+            ),
+            React.createElement(Field,{label:'Type',help:'<strong>Interest Only:</strong> Pay interest; principal unchanged.<br/><br/><strong>Capitalized:</strong> No payment; interest adds to principal.'},
+              React.createElement('select',{style:SS,value:morType,onChange:e=>setMorType(e.target.value)},
+                React.createElement('option',{value:'interest_only'},'Interest Only'),
+                React.createElement('option',{value:'interest_capitalized'},'Interest Capitalized')
+              )
+            )
+          )
+        ),
+        /* Floating */
+        React.createElement('div',{style:CS},
+          React.createElement('div',{style:CT},'Interest Rate Type'),
+          React.createElement(Field,{label:'Type',help:'<strong>Fixed:</strong> Same rate throughout.<br/><br/><strong>Floating:</strong> Resets periodically.'},
+            React.createElement('select',{style:SS,value:rateType,onChange:e=>setRateType(e.target.value)},
+              React.createElement('option',{value:'fixed'},'Fixed'),React.createElement('option',{value:'floating'},'Floating')
+            )
+          ),
+          rateType==='floating'&&React.createElement('div',{style:{...G3,marginTop:16}},
+            React.createElement(Field,{label:'Reset (Mo)',help:'How often rate resets.'},React.createElement('input',{style:IS,type:'number',value:resetFreq,onChange:e=>setResetFreq(e.target.value)})),
+            React.createElement(Field,{label:'Benchmark (%)',help:'Base rate (repo/MCLR).'},React.createElement('input',{style:IS,type:'number',value:benchmark,onChange:e=>setBenchmark(e.target.value),step:'0.01'})),
+            React.createElement(Field,{label:'Spread (%)',help:'Bank margin. Typical 1.5–3%.'},React.createElement('input',{style:IS,type:'number',value:spread,onChange:e=>setSpread(e.target.value),step:'0.01'}))
+          )
+        ),
+        /* Conventions */
+        React.createElement('div',{style:CS},
+          React.createElement('div',{style:CT},'Conventions'),
+          React.createElement('div',{style:G3},
+            React.createElement(Field,{label:'Compounding',help:'<strong>Monthly:</strong> Standard.<br/><strong>Daily:</strong> Overdraft.'},React.createElement('select',{style:SS,value:compounding,onChange:e=>setCompounding(e.target.value)},React.createElement('option',{value:'monthly'},'Monthly'),React.createElement('option',{value:'daily'},'Daily'))),
+            React.createElement(Field,{label:'Day Count',help:'<strong>30/360:</strong> Standard.<br/><strong>Actual/365:</strong> Real days.'},React.createElement('select',{style:SS,value:dayCount,onChange:e=>setDayCount(e.target.value)},React.createElement('option',{value:'30_360'},'30/360'),React.createElement('option',{value:'actual_365'},'Actual/365'))),
+            React.createElement(Field,{label:'Frequency'},React.createElement('select',{style:SS,value:frequency,onChange:e=>setFrequency(e.target.value)},React.createElement('option',{value:'monthly'},'Monthly'),React.createElement('option',{value:'quarterly'},'Quarterly')))
+          ),
+          React.createElement('div',{style:{...G3,marginTop:16}},
+            React.createElement(Field,{label:'Rounding'},React.createElement('select',{style:SS,value:rounding,onChange:e=>setRounding(e.target.value)},React.createElement('option',{value:'nearest_rupee'},'Nearest ₹'),React.createElement('option',{value:'exact'},'Exact'))),
+            React.createElement(Field,{label:'Currency'},React.createElement('input',{style:IS,value:currency,onChange:e=>setCurrency(e.target.value),maxLength:5})),
+            React.createElement(Field,{label:'Schedule'},React.createElement('select',{style:SS,value:granularity,onChange:e=>setGranularity(e.target.value)},React.createElement('option',{value:'monthly'},'Monthly'),React.createElement('option',{value:'yearly'},'Yearly'),React.createElement('option',{value:'both'},'Both')))
+          )
+        )
+      ),
+
+      /* ACTIONS */
+      React.createElement('div',{style:{display:'flex',gap:10,margin:'20px 0 32px',flexWrap:'wrap'}},
+        React.createElement('button',{onClick:calculate,disabled:loading,style:{fontFamily:"'Manrope',sans-serif",fontSize:14,fontWeight:600,padding:'12px 28px',borderRadius:10,border:'none',cursor:loading?'not-allowed':'pointer',background:'#4f8ff7',color:'#fff',opacity:loading?0.5:1,boxShadow:'0 2px 16px rgba(79,143,247,0.25)',transition:'all 0.15s',display:'flex',alignItems:'center',gap:8}},
+          loading&&React.createElement('span',{style:{width:14,height:14,border:'2px solid rgba(255,255,255,0.3)',borderTopColor:'#fff',borderRadius:'50%',animation:'spin 0.6s linear infinite',display:'inline-block'}}),
+          'Generate Schedule'
+        ),
+        React.createElement('button',{onClick:()=>{setPrincipal('5000000');setRate('8.5');setTenure('240');setStartDate('2025-04-01');setExtraEmi('0');setLumpSums([]);setMorMonths('0');setRateType('fixed');setResult(null);setErrors({})},style:{fontFamily:"'Manrope',sans-serif",fontSize:14,fontWeight:600,padding:'12px 24px',borderRadius:10,border:'1px solid rgba(255,255,255,0.09)',background:'transparent',color:'#8b949e',cursor:'pointer'}},'Reset')
+      ),
+
+      /* OUTPUT */
+      result&&React.createElement('div',{ref:resultRef},
+        React.createElement('hr',{style:{border:'none',borderTop:'1px solid rgba(255,255,255,0.06)',margin:'32px 0'}}),
+        React.createElement('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'baseline',marginBottom:8,flexWrap:'wrap'}},
+          React.createElement('h2',{style:{fontFamily:"'Fraunces',Georgia,serif",fontSize:22,fontWeight:600}},'Your Loan Breakdown'),
+          React.createElement('button',{onClick:exportCSV,style:{...MS,color:'#8b949e',background:'#171c27',border:'1px solid rgba(255,255,255,0.06)',padding:'6px 12px',borderRadius:6,cursor:'pointer'}},'⤓ CSV')
+        ),
+
+        /* Insights */
+        React.createElement('div',{style:{background:'linear-gradient(135deg,#171c27 0%,#161c2a 100%)',border:'1px solid rgba(255,255,255,0.06)',borderRadius:14,padding:20,marginBottom:16}},
+          React.createElement('h3',{style:{fontFamily:"'Fraunces',serif",fontSize:15,fontWeight:600,marginBottom:8}},'💡 Key Insights'),
+          React.createElement('div',{style:{fontSize:14,color:'#8b949e',lineHeight:1.85},dangerouslySetInnerHTML:{__html:(()=>{
+            const{cfg,summary:s}=result,fc=v=>fmtCurrency(v,cfg.currency,cfg.rounding),fl=v=>fmtLakhs(v,cfg.currency),freq=cfg.emiFrequency==='quarterly'?'quarter':'month';
+            let h='Your <strong style="color:#e6edf3">EMI is '+fc(s.emi)+'</strong> per '+freq+'. Over the loan\'s life, you\'ll pay <strong style="color:#d29922">'+fl(s.totalInterestPaid)+'</strong> in interest — <strong style="color:#e6edf3">'+(s.totalInterestPaid/cfg.principal*100).toFixed(1)+'%</strong> of principal.';
+            if(s.totalPrepayments>0){h+='<br/><br/>Prepayments of <strong style="color:#e6edf3">'+fc(s.totalPrepayments)+'</strong>';if(s.interestSaved>0)h+=' save <strong style="color:#3fb950">'+fl(s.interestSaved)+'</strong> in interest';const saved=s.originalTenure-s.effectiveTenure;if(saved>0&&cfg.prepayImpact==='reduce_tenure')h+=' and shorten the loan by <strong style="color:#3fb950">'+saved+' months</strong>';h+='.'}
+            if(cfg.moratoriumMonths>0)h+='<br/><br/>During the <strong style="color:#e6edf3">'+cfg.moratoriumMonths+'-month moratorium</strong>, '+(cfg.moratoriumType==='interest_capitalized'?'unpaid interest was added to principal.':'you paid interest-only.');
+            return h;
+          })()}})
+        ),
+
+        /* Summary Cards */
+        React.createElement('div',{style:{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(140px,1fr))',gap:10,marginBottom:16}},
+          [{l:'Monthly EMI',v:fmtCurrency(result.summary.emi,result.cfg.currency,result.cfg.rounding),a:'blue'},{l:'Total Paid',v:fmtLakhs(result.summary.totalAmountPaid,result.cfg.currency)},{l:'Total Interest',v:fmtLakhs(result.summary.totalInterestPaid,result.cfg.currency),a:'amber'},{l:'Interest Saved',v:fmtLakhs(result.summary.interestSaved,result.cfg.currency),a:'green'},{l:'Tenure',v:result.summary.effectiveTenure+' mo'}].map(c=>
+            React.createElement('div',{key:c.l,style:{background:'#171c27',border:'1px solid rgba(255,255,255,0.06)',borderRadius:10,padding:'14px 12px',textAlign:'center',borderLeft:c.a?'3px solid '+{blue:'#4f8ff7',amber:'#d29922',green:'#3fb950'}[c.a]:undefined}},
+              React.createElement('div',{style:{...MS,fontSize:9,textTransform:'uppercase',letterSpacing:'0.1em',color:'#545d68',marginBottom:5}},c.l),
+              React.createElement('div',{style:{fontFamily:"'Fraunces',serif",fontSize:19,fontWeight:600,color:c.a?{blue:'#4f8ff7',amber:'#d29922',green:'#3fb950'}[c.a]:'#e6edf3'}},c.v)
+            )
+          )
+        ),
+
+        /* Breakdown Bar */
+        (()=>{
+          const pP=(result.cfg.principal/result.summary.totalAmountPaid*100).toFixed(1),iP=(result.summary.totalInterestPaid/result.summary.totalAmountPaid*100).toFixed(1);
+          return React.createElement('div',{style:{marginBottom:20}},
+            React.createElement('div',{style:{display:'flex',height:12,borderRadius:6,overflow:'hidden',background:'#0e1219'}},
+              React.createElement('div',{style:{width:pP+'%',background:'#4f8ff7',borderRadius:'6px 0 0 6px'}}),
+              React.createElement('div',{style:{width:iP+'%',background:'#d29922'}})
+            ),
+            React.createElement('div',{style:{display:'flex',gap:20,marginTop:8}},
+              [['#4f8ff7','Principal '+pP+'%'],['#d29922','Interest '+iP+'%']].map(([c,l])=>
+                React.createElement('span',{key:l,style:{...MS,fontSize:10,color:'#545d68',display:'flex',alignItems:'center',gap:5}},
+                  React.createElement('span',{style:{width:7,height:7,borderRadius:2,background:c}}),l
+                )
+              )
+            )
+          );
+        })(),
+
+        /* Disclaimer */
+        React.createElement('div',{style:{fontSize:11,color:'#545d68',padding:'10px 14px',background:'rgba(210,153,34,0.08)',border:'1px solid rgba(210,153,34,0.12)',borderRadius:6,marginBottom:16,lineHeight:1.6}},
+          React.createElement('strong',{style:{color:'#d29922'}},'Disclaimer:'),' Estimation tool for planning. Actual bank schedules may vary. Verify with your lender.'
+        ),
+
+        /* Table */
+        (()=>{
+          const tabs=[];const g=granularity;
+          if(g==='monthly'||g==='both')tabs.push('monthly');if(g==='yearly'||g==='both')tabs.push('yearly');if(!tabs.length)tabs.push('monthly');
+          const fc=v=>fmtCurrency(v,result.cfg.currency,result.cfg.rounding);
+          const TH={fontFamily:"'JetBrains Mono',monospace",fontSize:9.5,fontWeight:600,textTransform:'uppercase',letterSpacing:'0.08em',color:'#545d68',padding:'10px 10px',textAlign:'right',borderBottom:'1px solid rgba(255,255,255,0.09)',background:'#12161e',position:'sticky',top:0,zIndex:2,whiteSpace:'nowrap'};
+          const TD={padding:'7px 10px',textAlign:'right',borderBottom:'1px solid rgba(255,255,255,0.03)',fontFamily:"'JetBrains Mono',monospace",fontSize:11.5,color:'#8b949e',whiteSpace:'nowrap'};
+          const yearlyData={};result.schedule.forEach(r=>{const y=r.date.getFullYear();if(!yearlyData[y])yearlyData[y]={year:y,interest:0,principal:0,prepayment:0,emi:0,closing:0};yearlyData[y].interest+=r.interest;yearlyData[y].principal+=r.principalComp;yearlyData[y].prepayment+=r.prepayment;yearlyData[y].emi+=r.emi;yearlyData[y].closing=r.closing});
+          return React.createElement('div',null,
+            React.createElement('div',{style:{display:'flex',borderBottom:'1px solid rgba(255,255,255,0.06)',marginBottom:12}},
+              tabs.map(t=>React.createElement('button',{key:t,onClick:()=>setActiveTab(t),style:{...MS,fontSize:10.5,textTransform:'uppercase',padding:'10px 18px',background:'transparent',color:activeTab===t?'#4f8ff7':'#545d68',border:'none',borderBottom:'2px solid '+(activeTab===t?'#4f8ff7':'transparent'),cursor:'pointer'}},t==='monthly'?'Monthly':'Yearly'))
+            ),
+            React.createElement('div',{style:{overflow:'auto',border:'1px solid rgba(255,255,255,0.06)',borderRadius:10,background:'#171c27',maxHeight:480}},
+              activeTab==='monthly'?
+                React.createElement('table',{style:{width:'100%',borderCollapse:'collapse'}},
+                  React.createElement('thead',null,React.createElement('tr',null,
+                    React.createElement('th',{style:{...TH,textAlign:'center',width:40}},'#'),
+                    React.createElement('th',{style:{...TH,textAlign:'left'}},'Date'),
+                    ['Opening','EMI','Interest','Principal','Prepay','Closing'].map(h=>React.createElement('th',{key:h,style:TH},h))
+                  )),
+                  React.createElement('tbody',null,result.schedule.map(row=>
+                    React.createElement('tr',{key:row.period,style:{background:row.isMoratorium?'rgba(210,153,34,0.05)':row.isPrepay?'rgba(63,185,80,0.05)':undefined}},
+                      React.createElement('td',{style:{...TD,textAlign:'center',color:'#545d68',fontSize:10.5}},row.period),
+                      React.createElement('td',{style:{...TD,textAlign:'left',fontSize:11}},fmtDate(row.date),row.isMoratorium&&React.createElement('span',{style:{fontSize:9,color:'#d29922',fontWeight:600}},' M')),
+                      React.createElement('td',{style:TD},fc(row.opening)),
+                      React.createElement('td',{style:TD},fc(row.emi)),
+                      React.createElement('td',{style:TD},fc(row.interest)),
+                      React.createElement('td',{style:TD},fc(row.principalComp)),
+                      React.createElement('td',{style:{...TD,color:row.prepayment>0?'#3fb950':undefined,fontWeight:row.prepayment>0?600:undefined}},row.prepayment>0?fc(row.prepayment):'—'),
+                      React.createElement('td',{style:TD},fc(row.closing))
+                    )
+                  ))
+                ):
+                React.createElement('table',{style:{width:'100%',borderCollapse:'collapse'}},
+                  React.createElement('thead',null,React.createElement('tr',null,
+                    React.createElement('th',{style:{...TH,textAlign:'center'}},'Year'),
+                    ['EMI','Interest','Principal','Prepay','Closing'].map(h=>React.createElement('th',{key:h,style:TH},h))
+                  )),
+                  React.createElement('tbody',null,Object.values(yearlyData).map(row=>
+                    React.createElement('tr',{key:row.year},
+                      React.createElement('td',{style:{...TD,textAlign:'center'}},row.year),
+                      React.createElement('td',{style:TD},fc(row.emi)),React.createElement('td',{style:TD},fc(row.interest)),
+                      React.createElement('td',{style:TD},fc(row.principal)),
+                      React.createElement('td',{style:TD},row.prepayment>0?fc(row.prepayment):'—'),
+                      React.createElement('td',{style:TD},fc(row.closing))
+                    )
+                  ))
+                )
+            )
+          );
+        })()
+      )
+    )
+  );
 }
 
-function renderOutput(cfg, schedule, summary) {
-  var sym = cfg.currency, rm = cfg.rounding;
-  var fc = function(v) { return fmtCurrency(v, sym, rm); };
-  var fl = function(v) { return fmtLakhs(v, sym); };
-  var freqLabel = cfg.emiFrequency === 'quarterly' ? 'quarter' : 'month';
-  var tenureSaved = summary.originalTenure - summary.effectiveTenure;
-  var intRatio = (summary.totalInterestPaid / cfg.principal * 100).toFixed(1);
-
-  // Insights
-  var ih = '<h3>💡 Key Insights</h3><div class="insights-text">';
-  ih += 'Your <strong>EMI is ' + fc(summary.emi) + '</strong> per ' + freqLabel + '. ';
-  ih += 'Over the life of this loan, you\'ll pay <span class="hl-amber">' + fl(summary.totalInterestPaid) + '</span> in total interest — that\'s <strong>' + intRatio + '%</strong> of your principal.';
-  if (summary.totalPrepayments > 0) {
-    ih += '<br><br>Your prepayments of <strong>' + fc(summary.totalPrepayments) + '</strong> ';
-    if (summary.interestSaved > 0) ih += 'save you <span class="hl-green">' + fl(summary.interestSaved) + '</span> in interest';
-    if (tenureSaved > 0 && cfg.prepayImpact === 'reduce_tenure') ih += ' and shorten your loan by <span class="hl-green">' + tenureSaved + ' ' + freqLabel + (tenureSaved !== 1 ? 's' : '') + '</span>';
-    ih += '.';
-  }
-  if (cfg.moratoriumMonths > 0) {
-    ih += '<br><br>During the <strong>' + cfg.moratoriumMonths + '-month moratorium</strong>, ';
-    ih += cfg.moratoriumType === 'interest_capitalized'
-      ? 'unpaid interest was added to your principal — your effective loan amount grew before EMIs began.'
-      : 'you paid interest-only, keeping the principal unchanged.';
-  }
-  ih += '</div>';
-  document.getElementById('insights-card').innerHTML = ih;
-
-  // Summary cards
-  document.getElementById('summary-grid').innerHTML =
-    '<div class="summary-card blue" role="listitem"><div class="metric-label">Monthly EMI</div><div class="metric-value">' + fc(summary.emi) + '</div></div>' +
-    '<div class="summary-card" role="listitem"><div class="metric-label">Total Paid</div><div class="metric-value">' + fl(summary.totalAmountPaid) + '</div></div>' +
-    '<div class="summary-card amber" role="listitem"><div class="metric-label">Total Interest</div><div class="metric-value">' + fl(summary.totalInterestPaid) + '</div></div>' +
-    '<div class="summary-card green" role="listitem"><div class="metric-label">Interest Saved</div><div class="metric-value">' + fl(summary.interestSaved) + '</div></div>' +
-    '<div class="summary-card" role="listitem"><div class="metric-label">Effective Tenure</div><div class="metric-value">' + summary.effectiveTenure + ' <span style="font-size:.65rem;font-family:var(--font-mono);color:var(--text-muted)">' + freqLabel + 's</span></div></div>';
-
-  // Breakdown bar
-  var pPct = (cfg.principal / summary.totalAmountPaid * 100).toFixed(1);
-  var iPct = (summary.totalInterestPaid / summary.totalAmountPaid * 100).toFixed(1);
-  document.getElementById('breakdown-section').innerHTML =
-    '<div class="breakdown-bar"><div class="bar-seg-principal" style="width:' + pPct + '%"></div><div class="bar-seg-interest" style="width:' + iPct + '%"></div></div>' +
-    '<div class="breakdown-legend">' +
-    '<span class="legend-item"><span class="legend-dot" style="background:var(--accent-blue)"></span>Principal ' + pPct + '%</span>' +
-    '<span class="legend-item"><span class="legend-dot" style="background:var(--accent-amber)"></span>Interest ' + iPct + '%</span>' +
-    (summary.totalPrepayments > 0 ? '<span class="legend-item"><span class="legend-dot" style="background:var(--accent-green)"></span>Prepayments ' + fc(summary.totalPrepayments) + '</span>' : '') +
-    '</div>';
-
-  // Assumptions
-  document.getElementById('assumptions-content').innerHTML =
-    '<ul class="assumptions-list">' +
-    '<li>Method: Reducing balance — EMI recalculated only on rate reset or reduce-EMI prepayment</li>' +
-    '<li>Compounding: ' + (cfg.compounding === 'monthly' ? 'Monthly' : 'Daily') + '</li>' +
-    '<li>Day count: ' + (cfg.dayCount === '30_360' ? '30/360' : 'Actual/365') + '</li>' +
-    '<li>Rounding: ' + (cfg.rounding === 'nearest_rupee' ? 'EMI to nearest rupee; intermediate calcs at full precision' : '2 decimal places') + '</li>' +
-    '<li>Prepayments applied at start of period, before interest accrual</li>' +
-    '<li>Final installment adjusted to clear residual balance from rounding</li>' +
-    '<li>Rate: ' + (cfg.interestType === 'fixed' ? 'Fixed at ' + cfg.annualRate + '%' : 'Floating — resets every ' + cfg.resetFreq + 'mo to ' + cfg.benchmarkRate + '% + ' + cfg.spread + '%') + '</li>' +
-    '</ul>';
-
-  // Tables
-  document.getElementById('table-monthly').innerHTML = buildTable(schedule, cfg);
-  document.getElementById('table-yearly').innerHTML = buildYearlyTable(aggregateYearly(schedule), cfg);
-
-  // Tabs
-  var gran = cfg.granularity, tabs = [];
-  if (gran === 'monthly' || gran === 'both') tabs.push({ id: 'monthly', label: 'Monthly Schedule' });
-  if (gran === 'yearly' || gran === 'both') tabs.push({ id: 'yearly', label: 'Yearly Summary' });
-  if (!tabs.length) tabs.push({ id: 'monthly', label: 'Monthly Schedule' });
-
-  document.getElementById('tab-bar').innerHTML = tabs.map(function(t, i) {
-    return '<button class="tab-btn ' + (i === 0 ? 'active' : '') + '" role="tab" aria-selected="' + (i === 0) + '" onclick="switchTab(\'' + t.id + '\',this)">' + t.label + '</button>';
-  }).join('');
-
-  document.getElementById('table-monthly').style.display = 'none';
-  document.getElementById('table-yearly').style.display = 'none';
-  document.getElementById('table-' + tabs[0].id).style.display = '';
-
-  var out = document.getElementById('output-section');
-  out.classList.add('visible');
-  setTimeout(function() { out.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100);
-}
-
-function switchTab(id, btn) {
-  document.getElementById('table-monthly').style.display = 'none';
-  document.getElementById('table-yearly').style.display = 'none';
-  document.getElementById('table-' + id).style.display = '';
-  document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); b.setAttribute('aria-selected', 'false'); });
-  btn.classList.add('active');
-  btn.setAttribute('aria-selected', 'true');
-}
-
-function buildTable(schedule, cfg) {
-  var sym = cfg.currency, rm = cfg.rounding;
-  var fc = function(v) { return fmtCurrency(v, sym, rm); };
-  var rows = schedule.map(function(row) {
-    var cls = row.isMoratorium ? 'moratorium-row' : row.isPrepay ? 'prepay-row' : '';
-    return '<tr class="' + cls + '"><td>' + row.period + '</td><td>' + fmtDate(row.date) + '</td><td>' + fc(row.opening) + '</td><td>' + fc(row.emi) + '</td><td>' + fc(row.interest) + '</td><td>' + fc(row.principalComp) + '</td><td>' + (row.prepayment > 0 ? fc(row.prepayment) : '—') + '</td><td>' + fc(row.closing) + '</td></tr>';
-  }).join('');
-  return '<div class="table-wrap"><table aria-label="Monthly amortization schedule"><thead><tr><th scope="col">#</th><th scope="col">Date</th><th scope="col">Opening</th><th scope="col">EMI</th><th scope="col">Interest</th><th scope="col">Principal</th><th scope="col">Prepayment</th><th scope="col">Closing</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
-}
-
-function aggregateYearly(schedule) {
-  var map = {};
-  schedule.forEach(function(row) {
-    var y = row.date.getFullYear();
-    if (!map[y]) map[y] = { year: y, interest: 0, principal: 0, prepayment: 0, emi: 0, closing: 0 };
-    map[y].interest += row.interest;
-    map[y].principal += row.principalComp;
-    map[y].prepayment += row.prepayment;
-    map[y].emi += row.emi;
-    map[y].closing = row.closing;
-  });
-  return Object.values(map);
-}
-
-function buildYearlyTable(data, cfg) {
-  var sym = cfg.currency, rm = cfg.rounding;
-  var fc = function(v) { return fmtCurrency(v, sym, rm); };
-  var rows = data.map(function(row) {
-    return '<tr><td style="text-align:center">' + row.year + '</td><td>' + fc(row.emi) + '</td><td>' + fc(row.interest) + '</td><td>' + fc(row.principal) + '</td><td>' + (row.prepayment > 0 ? fc(row.prepayment) : '—') + '</td><td>' + fc(row.closing) + '</td></tr>';
-  }).join('');
-  return '<div class="table-wrap"><table aria-label="Yearly summary"><thead><tr><th scope="col">Year</th><th scope="col">Total EMI</th><th scope="col">Interest</th><th scope="col">Principal</th><th scope="col">Prepayments</th><th scope="col">Closing</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
-}
-
-// ═══════════════════════════════════════════════════
-// E — CSV EXPORT
-// ═══════════════════════════════════════════════════
-
-function exportCSV() {
-  var table = document.querySelector('#table-monthly table');
-  if (!table) return;
-  var csv = [];
-  table.querySelectorAll('tr').forEach(function(tr) {
-    var cells = [];
-    tr.querySelectorAll('th, td').forEach(function(td) {
-      cells.push('"' + td.textContent.replace(/"/g, '""').trim() + '"');
-    });
-    csv.push(cells.join(','));
-  });
-  var blob = new Blob([csv.join('\n')], { type: 'text/csv;charset=utf-8;' });
-  var url = URL.createObjectURL(blob);
-  var a = document.createElement('a');
-  a.href = url;
-  a.download = 'amortization_schedule.csv';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-}
-
-// ═══════════════════════════════════════════════════
-// INIT
-// ═══════════════════════════════════════════════════
-toggleFloatingFields();
+ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
 </script>
 </body>
 </html>
